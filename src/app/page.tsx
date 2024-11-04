@@ -1,101 +1,83 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import React, { useState } from 'react';
+import { MessageSquare } from 'lucide-react';
+
+const HumorConverter = () => {
+  const [input, setInput] = useState('');
+  const [result, setResult] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const convertToHumor = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/', {  // このエンドポイントは別途実装が必要です
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // 実際の実装時にはAnthropicのAPIキーを適切に設定してください
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "user",
+              content: `以下の日常の一コマをユーモアのある表現に変換してください：${input}`
+            }
+          ],
+          model: "claude-3-sonnet-20240229",
+          max_tokens: 1000,
+          temperature: 0.7,
+        })
+      });
+
+      const data = await response.json();
+      setResult(data.content);
+    } catch (error) {
+      console.log('Error:', error);
+      setResult('エラーが発生しました。もう一度お試しください。');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="max-w-2xl mx-auto p-6 space-y-6">
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold text-gray-900">日常をユーモアに変換！</h1>
+        <p className="text-gray-600">日常の出来事を入力してください。Claudeがユーモアある表現に変換します。</p>
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <div className="space-y-4">
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="例：今日、電車で寝過ごしてしまった..."
+          className="w-full h-32 p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+
+        <button
+          onClick={convertToHumor}
+          disabled={loading || !input.trim()}
+          className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 
+            disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+        >
+          {loading ? '変換中...' : '変換する'}
+        </button>
+      </div>
+
+      {result && (
+        <div className="bg-gray-50 p-6 rounded-lg">
+          <div className="flex items-start space-x-4">
+            <MessageSquare className="w-6 h-6 text-blue-500 flex-shrink-0 mt-1" />
+            <div>
+              <h2 className="font-semibold text-gray-900 mb-2">Claude's ユーモア変換</h2>
+              <p className="text-gray-700 whitespace-pre-wrap">{result}</p>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      )}
     </div>
   );
-}
+};
+
+export default HumorConverter;
